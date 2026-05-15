@@ -1,388 +1,199 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Table View</title>
-
-    <link rel="stylesheet"
-          href="/static/css/style.css">
-
-</head>
-
-<body style="background-color: rgb(210, 255, 198);">
-
-<div class="container">
-
-    <!-- HEADER -->
-
-    <div class="header">
-
-        <div class="title-section">
-
-            <h1>
-                Instruments Table View
-            </h1>
-
-            <p>
-                Category wise stock availability
-            </p>
-
-        </div>
-
-        <button
-            class="table-btn"
-            onclick="goBack()"
-        >
-            Dashboard
-        </button>
-
-    </div>
-
-
-    <!-- SEARCH -->
-
-    <input
-        type="text"
-        id="tableSearch"
-        placeholder="Search instruments..."
-        class="search-bar"
-        onkeyup="searchTable()"
-    >
-
-
-    <!-- FILTERS -->
-
-    <div class="filter-bar"
-         style="
-         display:flex;
-         gap:10px;
-         flex-wrap:wrap;
-         margin-top:20px;
-         ">
-
-        <button
-            onclick="sortAZ()"
-            class="table-btn"
-        >
-            A → Z
-        </button>
-
-        <button
-            onclick="sortZA()"
-            class="table-btn"
-        >
-            Z → A
-        </button>
-
-        <button
-            onclick="sortQtyLow()"
-            class="table-btn"
-        >
-            Qty ↑
-        </button>
-
-        <button
-            onclick="sortQtyHigh()"
-            class="table-btn"
-        >
-            Qty ↓
-        </button>
-
-        <select
-            id="categoryFilter"
-            onchange="filterCategory()"
-            class="search-bar"
-            style="max-width:220px;"
-        >
-
-            <option value="all">
-                All Categories
-            </option>
-
-        </select>
-
-    </div>
-
-
-    <!-- TABLE -->
-
-    <div class="table-container">
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Category</th>
-
-                    <th>Instrument</th>
-
-                    <th>Quantity</th>
-
-                    <th>Status</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody id="tableBody">
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-
-<script>
-
-let allData = [];
-
-const board = window.location.pathname.split("/").pop();
-
-
-// ==========================
-// LOAD TABLE
-// ==========================
-
-async function loadTable() {
-
-    let res = await fetch(`/items/${board}`);
-
-    let data = await res.json();
-
-    allData = data;
-
-    populateCategory(data);
-
-    renderTable(data);
-}
-
-
-// ==========================
-// RENDER TABLE
-// ==========================
-
-function renderTable(data) {
-
-    let tableBody =
-        document.getElementById("tableBody");
-
-    tableBody.innerHTML = "";
-
-    data.forEach(item => {
-
-        let status = "";
-
-        let statusClass = "";
-
-        if (item.quantity > item.alert_limit) {
-
-            status = "Available";
-
-            statusClass = "available";
-
-        }
-
-        else if (
-            item.quantity == item.alert_limit
-        ) {
-
-            status = "Running Low";
-
-            statusClass = "medium";
-
-        }
-
-        else {
-
-            status = "Low Stock";
-
-            statusClass = "low";
-        }
-
-        tableBody.innerHTML += `
-
-        <tr>
-
-            <td>${item.category}</td>
-
-            <td>${item.name}</td>
-
-            <td>${item.quantity}</td>
-
-            <td>
-
-                <span class="${statusClass}">
-                    ${status}
-                </span>
-
-            </td>
-
-        </tr>
-
-        `;
-    });
-}
-
-
-// ==========================
-// SEARCH
-// ==========================
-
-function searchTable() {
-
-    let input = document
-        .getElementById("tableSearch")
-        .value
-        .toLowerCase();
-
-    let filtered = allData.filter(item => {
-
-        return (
-            item.name.toLowerCase().includes(input)
-            ||
-            item.category.toLowerCase().includes(input)
-        );
-
-    });
-
-    renderTable(filtered);
-}
-
-
-// ==========================
-// CATEGORY FILTER
-// ==========================
-
-function populateCategory(data) {
-
-    let select =
-        document.getElementById("categoryFilter");
-
-    let categories = [
-        ...new Set(data.map(i => i.category))
-    ];
-
-    select.innerHTML =
-        `<option value="all">All Categories</option>`;
-
-    categories.forEach(cat => {
-
-        select.innerHTML += `
-            <option value="${cat}">
-                ${cat}
-            </option>
-        `;
-    });
-}
-
-
-function filterCategory() {
-
-    let value =
-        document.getElementById("categoryFilter").value;
-
-    if (value === "all") {
-
-        renderTable(allData);
-
-    }
-
-    else {
-
-        let filtered = allData.filter(
-            i => i.category === value
-        );
-
-        renderTable(filtered);
-    }
-}
-
-
-// ==========================
-// SORT A-Z
-// ==========================
-
-function sortAZ() {
-
-    let sorted = [...allData].sort((a, b) =>
-        a.name.localeCompare(b.name)
-    );
-
-    renderTable(sorted);
-}
-
-
-// ==========================
-// SORT Z-A
-// ==========================
-
-function sortZA() {
-
-    let sorted = [...allData].sort((a, b) =>
-        b.name.localeCompare(a.name)
-    );
-
-    renderTable(sorted);
-}
-
-
-// ==========================
-// SORT QTY LOW-HIGH
-// ==========================
-
-function sortQtyLow() {
-
-    let sorted = [...allData].sort((a, b) =>
-        a.quantity - b.quantity
-    );
-
-    renderTable(sorted);
-}
-
-
-// ==========================
-// SORT QTY HIGH-LOW
-// ==========================
-
-function sortQtyHigh() {
-
-    let sorted = [...allData].sort((a, b) =>
-        b.quantity - a.quantity
-    );
-
-    renderTable(sorted);
-}
-
-
-// ==========================
-// BACK
-// ==========================
-
-function goBack() {
-
-    window.location.href =
-        `/board/${board}`;
-}
-
-
-// ==========================
-// START
-// ==========================
-
-loadTable();
-
-</script>
-
-</body>
-</html>
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify,
+    redirect
+)
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = "stock-secret-key"
+
+
+# =========================
+# CLEAN FUNCTION
+# =========================
+def clean_text(text):
+    return text.replace("=", "") \
+               .replace(" ", "") \
+               .strip() \
+               .lower()
+
+
+# =========================
+# DATABASE
+# =========================
+def get_db():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# =========================
+# INIT DB
+# =========================
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            board TEXT,
+            name TEXT,
+            category TEXT,
+            quantity INTEGER,
+            alert_limit INTEGER,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+
+# =========================
+# HOME ROUTE
+# =========================
+@app.route("/")
+def home():
+    return redirect("/board/main")
+
+
+# =========================
+# BOARD PAGE
+# =========================
+@app.route("/board/<board_name>")
+def board(board_name):
+    return render_template("index.html", board=board_name)
+
+
+# =========================
+# TABLE PAGE
+# =========================
+@app.route("/table/<board>")
+def table_page(board):
+    return render_template("table.html", board=board)
+
+
+# =========================
+# GET ITEMS (API)
+# =========================
+@app.route("/items/<board>", methods=["GET"])
+def get_items(board):
+
+    conn = get_db()
+
+    items = conn.execute("""
+        SELECT * FROM items
+        WHERE board=?
+        ORDER BY id DESC
+    """, (board,)).fetchall()
+
+    conn.close()
+
+    return jsonify([dict(row) for row in items])
+
+
+# =========================
+# ADD ITEM
+# =========================
+@app.route("/items/<board>", methods=["POST"])
+def add_item(board):
+
+    data = request.json
+
+    name = clean_text(data["name"])
+    category = data["category"].strip().lower()
+
+    now = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
+    conn = get_db()
+
+    existing = conn.execute("""
+        SELECT id FROM items
+        WHERE board = ?
+        AND LOWER(REPLACE(name, ' ', '')) = ?
+    """, (board, name)).fetchone()
+
+    if existing:
+        conn.close()
+        return jsonify({"message": "Duplicate item not allowed"}), 400
+
+    conn.execute("""
+        INSERT INTO items (
+            board, name, category,
+            quantity, alert_limit,
+            created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        board,
+        name,
+        category,
+        data["quantity"],
+        data["alert_limit"],
+        now,
+        now
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Item added"})
+
+
+# =========================
+# UPDATE ITEM
+# =========================
+@app.route("/items/<int:id>", methods=["PUT"])
+def update_item(id):
+
+    data = request.json
+    now = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE items
+        SET quantity=?,
+            updated_at=?
+        WHERE id=?
+    """, (
+        data["quantity"],
+        now,
+        id
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Updated"})
+
+
+# =========================
+# DELETE ITEM
+# =========================
+@app.route("/items/<int:id>", methods=["DELETE"])
+def delete_item(id):
+
+    conn = get_db()
+
+    conn.execute("""
+        DELETE FROM items
+        WHERE id=?
+    """, (id,))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Deleted"})
+
+
+# =========================
+# RUN (RENDER SAFE)
+# =========================
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
