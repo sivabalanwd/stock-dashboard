@@ -1,15 +1,11 @@
-from flask import (
-    Flask,
-    render_template,
-    request,
-    jsonify,
-    redirect
-)
+from flask import Flask, render_template, request, jsonify, redirect
 import sqlite3
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "stock-secret-key"
+
+print("DEPLOY VERSION UPDATED")
 
 
 # =========================
@@ -55,7 +51,7 @@ init_db()
 
 
 # =========================
-# HOME ROUTE (IMPORTANT FIX)
+# HOME
 # =========================
 @app.route("/")
 def home():
@@ -68,16 +64,21 @@ def home():
 @app.route("/board/<board_name>")
 def board(board_name):
     return render_template("index.html", board=board_name)
+
+
+# =========================
+# TABLE PAGE
+# =========================
 @app.route("/table/<board>")
 def table_page(board):
     return render_template("table.html", board=board)
+
 
 # =========================
 # GET ITEMS
 # =========================
 @app.route("/items/<board>", methods=["GET"])
 def get_items(board):
-
     conn = get_db()
 
     items = conn.execute("""
@@ -92,11 +93,10 @@ def get_items(board):
 
 
 # =========================
-# ADD ITEM (NO DUPLICATES)
+# ADD ITEM
 # =========================
 @app.route("/items/<board>", methods=["POST"])
 def add_item(board):
-
     data = request.json
 
     name = clean_text(data["name"])
@@ -144,7 +144,6 @@ def add_item(board):
 # =========================
 @app.route("/items/<int:id>", methods=["PUT"])
 def update_item(id):
-
     data = request.json
     now = datetime.now().strftime("%d %b %Y, %I:%M %p")
 
@@ -172,7 +171,6 @@ def update_item(id):
 # =========================
 @app.route("/items/<int:id>", methods=["DELETE"])
 def delete_item(id):
-
     conn = get_db()
 
     conn.execute("""
@@ -187,7 +185,7 @@ def delete_item(id):
 
 
 # =========================
-# RUN (RENDER FIX)
+# RUN (RENDER SAFE)
 # =========================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
