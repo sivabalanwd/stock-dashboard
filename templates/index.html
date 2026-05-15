@@ -4,14 +4,13 @@
 <head>
 
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Stock Dashboard</title>
 
-    <link rel="stylesheet"
-          href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 
@@ -20,36 +19,27 @@
 <div class="container">
 
     <!-- HEADER -->
-
     <div class="header">
+
         <div class="top-buttons">
-
-    <button
-        class="table-btn"
-        onclick="goToTable()"
-    >
-        Table View
-    </button>
-
-    
-
-</div>
-
-        <div class="title-section">
-        <center>
-            <h1>
-                AERANN INSTRUMENTS AND ENGINEERING SERVICES (P) Ltd.
-            </h1>
-
-            <p>
-                Instruments and Available Quantity
-            </p>
-        </center>
+            <button class="table-btn" onclick="goToTable()">
+                Table View
+            </button>
         </div>
 
+        <div class="title-section">
+            <center>
+                <h1>
+                    AERANN INSTRUMENTS AND ENGINEERING SERVICES (P) Ltd.
+                </h1>
+
+                <p>
+                    Instruments and Available Quantity
+                </p>
+            </center>
+        </div>
 
         <!-- SEARCH -->
-
         <input
             type="text"
             id="search"
@@ -58,84 +48,40 @@
             class="search-bar"
         >
 
-
-        <!-- TOTAL -->
-
-        
-
     </div>
 
-
     <!-- ADD BUTTON -->
-
-    <button
-        class="add-btn"
-        onclick="openForm()"
-    >
+    <button class="add-btn" onclick="openForm()">
         +
     </button>
 
-
     <!-- ITEMS -->
-
-    <div
-        id="items"
-        class="grid"
-    ></div>
+    <div id="items" class="grid"></div>
 
 </div>
-
 
 <!-- ========================= -->
 <!-- MODAL -->
 <!-- ========================= -->
 
-<div
-    id="formModal"
-    class="modal"
->
+<div id="formModal" class="modal">
 
     <div class="modal-content">
 
         <h3>Add Item</h3>
 
-
-        <input
-            id="name"
-            placeholder="Item Name"
-        >
-
-        <input
-            id="category"
-            placeholder="Category"
-        >
-
-        <input
-            id="quantity"
-            type="number"
-            placeholder="Quantity"
-        >
-
-        <input
-            id="alertLimit"
-            type="number"
-            placeholder="Alert Limit"
-        >
-
+        <input id="name" placeholder="Item Name">
+        <input id="category" placeholder="Category">
+        <input id="quantity" type="number" placeholder="Quantity">
+        <input id="alertLimit" type="number" placeholder="Alert Limit">
 
         <div class="modal-buttons">
 
-            <button
-                class="save-btn"
-                onclick="addItem()"
-            >
+            <button class="save-btn" onclick="addItem()">
                 Save
             </button>
 
-            <button
-                class="cancel-btn"
-                onclick="closeForm()"
-            >
+            <button class="cancel-btn" onclick="closeForm()">
                 Cancel
             </button>
 
@@ -144,9 +90,21 @@
     </div>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- ========================= -->
+<!-- SCRIPTS -->
+<!-- ========================= -->
 
 <script src="/static/js/script.js"></script>
+
+<script>
+    // =========================
+    // NAVIGATION FIX
+    // =========================
+    function goToTable() {
+        window.location.href = "/table/main";
+    }
+</script>
 
 </body>
 </html>
