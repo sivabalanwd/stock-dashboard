@@ -1,0 +1,196 @@
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify,
+    redirect,
+    session
+)
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = "stock-secret-key"
+
+
+# =========================
+# CLEAN FUNCTION
+# =========================
+def clean_text(text):
+    return text.replace("=", "") \
+               .replace(" ", "") \
+               .strip() \
+               .lower()
+
+
+# =========================
+# DATABASE
+# =========================
+def get_db():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# =========================
+# INIT DB
+# =========================
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            board TEXT,
+            name TEXT,
+            category TEXT,
+            quantity INTEGER,
+            alert_limit INTEGER,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+
+
+
+# =========================
+# BOARD PAGE
+# =========================
+@app.route("/board/<board_name>")
+def board(board_name):
+    return render_template("index.html", board=board_name)
+
+
+# =========================
+# GET ITEMS
+# =========================
+@app.route("/items/<board>", methods=["GET"])
+def get_items(board):
+
+    conn = get_db()
+
+    items = conn.execute("""
+        SELECT * FROM items
+        WHERE board=?
+        ORDER BY id DESC
+    """, (board,)).fetchall()
+
+    conn.close()
+
+    return jsonify([dict(row) for row in items])
+
+
+# =========================
+# ADD ITEM (NO DUPLICATES)
+# =========================
+@app.route("/items/<board>", methods=["POST"])
+def add_item(board):
+
+    data = request.json
+
+    name = clean_text(data["name"])
+    category = data["category"].strip().lower()
+
+    now = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
+    conn = get_db()
+
+    # DUPLICATE CHECK (NAME ONLY)
+    existing = conn.execute("""
+        SELECT id FROM items
+        WHERE board = ?
+        AND LOWER(REPLACE(name, ' ', '')) = ?
+    """, (board, name)).fetchone()
+
+    if existing:
+        conn.close()
+        return jsonify({"message": "Duplicate item not allowed"}), 400
+
+    conn.execute("""
+        INSERT INTO items (
+            board, name, category,
+            quantity, alert_limit,
+            created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        board,
+        name,
+        category,
+        data["quantity"],
+        data["alert_limit"],
+        now,
+        now
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Item added"})
+
+
+# =========================
+# UPDATE ITEM
+# =========================
+@app.route("/items/<int:id>", methods=["PUT"])
+def update_item(id):
+
+    data = request.json
+
+    now = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE items
+        SET quantity=?,
+            updated_at=?
+        WHERE id=?
+    """, (
+        data["quantity"],
+        now,
+        id
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Updated"})
+
+
+# =========================
+# DELETE ITEM
+# =========================
+@app.route("/items/<int:id>", methods=["DELETE"])
+def delete_item(id):
+
+    conn = get_db()
+
+    conn.execute("""
+        DELETE FROM items
+        WHERE id=?
+    """, (id,))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Deleted"})
+
+
+# =========================
+# TABLE PAGE
+# =========================
+@app.route("/table/<board>")
+def table_page(board):
+    return render_template("table.html", board=board)
+
+
+# =========================
+# RUN APP
+# =========================
+if __name__ == "__main__":
+    app.run(debug=True)
