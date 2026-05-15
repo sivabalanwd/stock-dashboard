@@ -68,7 +68,9 @@ def home():
 @app.route("/board/<board_name>")
 def board(board_name):
     return render_template("index.html", board=board_name)
-
+@app.route("/table/<board>")
+def table_page(board):
+    return render_template("table.html", board=board)
 
 # =========================
 # GET ITEMS
