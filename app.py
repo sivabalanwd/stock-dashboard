@@ -3,8 +3,7 @@ from flask import (
     render_template,
     request,
     jsonify,
-    redirect,
-    session
+    redirect
 )
 import sqlite3
 from datetime import datetime
@@ -55,6 +54,12 @@ def init_db():
 init_db()
 
 
+# =========================
+# HOME ROUTE (IMPORTANT FIX)
+# =========================
+@app.route("/")
+def home():
+    return redirect("/board/main")
 
 
 # =========================
@@ -99,7 +104,6 @@ def add_item(board):
 
     conn = get_db()
 
-    # DUPLICATE CHECK (NAME ONLY)
     existing = conn.execute("""
         SELECT id FROM items
         WHERE board = ?
@@ -140,7 +144,6 @@ def add_item(board):
 def update_item(id):
 
     data = request.json
-
     now = datetime.now().strftime("%d %b %Y, %I:%M %p")
 
     conn = get_db()
@@ -182,15 +185,7 @@ def delete_item(id):
 
 
 # =========================
-# TABLE PAGE
-# =========================
-@app.route("/table/<board>")
-def table_page(board):
-    return render_template("table.html", board=board)
-
-
-# =========================
-# RUN APP
+# RUN (RENDER FIX)
 # =========================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
