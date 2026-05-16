@@ -1,17 +1,71 @@
-from flask import Flask, render_template, request, jsonify, redirect
-import sqlite3
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify,
+    redirect
+)
+
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
 
 app = Flask(__name__)
+
 app.secret_key = "stock-secret-key"
 
-print("DEPLOY VERSION UPDATED")
+# =========================
+# DATABASE CONFIG
+# =========================
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Render postgres fix
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgres://",
+        "postgresql://",
+        1
+    )
+
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
+
+# =========================
+# MODEL
+# =========================
+
+class Item(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    board = db.Column(db.String(100))
+    name = db.Column(db.String(200))
+    category = db.Column(db.String(100))
+
+    quantity = db.Column(db.Integer)
+    alert_limit = db.Column(db.Integer)
+
+    created_at = db.Column(db.String(100))
+    updated_at = db.Column(db.String(100))
+
+
+# =========================
+# CREATE TABLES
+# =========================
+
+with app.app_context():
+    db.create_all()
 
 
 # =========================
 # CLEAN FUNCTION
 # =========================
+
 def clean_text(text):
+
     return text.replace("=", "") \
                .replace(" ", "") \
                .strip() \
@@ -19,40 +73,9 @@ def clean_text(text):
 
 
 # =========================
-# DATABASE
+# HOME ROUTE
 # =========================
-def get_db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
 
-
-# =========================
-# INIT DB
-# =========================
-def init_db():
-    conn = get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            board TEXT,
-            name TEXT,
-            category TEXT,
-            quantity INTEGER,
-            alert_limit INTEGER,
-            created_at TEXT,
-            updated_at TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-init_db()
-
-
-# =========================
-# HOME
-# =========================
 @app.route("/")
 def home():
     return redirect("/board/main")
@@ -61,131 +84,158 @@ def home():
 # =========================
 # BOARD PAGE
 # =========================
+
 @app.route("/board/<board_name>")
 def board(board_name):
-    return render_template("index.html", board=board_name)
+    return render_template(
+        "index.html",
+        board=board_name
+    )
 
 
 # =========================
 # TABLE PAGE
 # =========================
+
 @app.route("/table/<board>")
 def table_page(board):
-    return render_template("table.html", board=board)
+
+    return render_template(
+        "table.html",
+        board=board
+    )
 
 
 # =========================
 # GET ITEMS
 # =========================
+
 @app.route("/items/<board>", methods=["GET"])
 def get_items(board):
-    conn = get_db()
 
-    items = conn.execute("""
-        SELECT * FROM items
-        WHERE board=?
-        ORDER BY id DESC
-    """, (board,)).fetchall()
+    items = Item.query.filter_by(
+        board=board
+    ).order_by(Item.id.desc()).all()
 
-    conn.close()
+    result = []
 
-    return jsonify([dict(row) for row in items])
+    for item in items:
+
+        result.append({
+            "id": item.id,
+            "board": item.board,
+            "name": item.name,
+            "category": item.category,
+            "quantity": item.quantity,
+            "alert_limit": item.alert_limit,
+            "created_at": item.created_at,
+            "updated_at": item.updated_at
+        })
+
+    return jsonify(result)
 
 
 # =========================
 # ADD ITEM
 # =========================
+
 @app.route("/items/<board>", methods=["POST"])
 def add_item(board):
+
     data = request.json
 
     name = clean_text(data["name"])
     category = data["category"].strip().lower()
 
-    now = datetime.now().strftime("%d %b %Y, %I:%M %p")
+    now = datetime.now().strftime(
+        "%d %b %Y, %I:%M %p"
+    )
 
-    conn = get_db()
-
-    existing = conn.execute("""
-        SELECT id FROM items
-        WHERE board = ?
-        AND LOWER(REPLACE(name, ' ', '')) = ?
-    """, (board, name)).fetchone()
+    existing = Item.query.filter_by(
+        board=board,
+        name=name
+    ).first()
 
     if existing:
-        conn.close()
-        return jsonify({"message": "Duplicate item not allowed"}), 400
+        return jsonify({
+            "message": "Duplicate item not allowed"
+        }), 400
 
-    conn.execute("""
-        INSERT INTO items (
-            board, name, category,
-            quantity, alert_limit,
-            created_at, updated_at
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        board,
-        name,
-        category,
-        data["quantity"],
-        data["alert_limit"],
-        now,
-        now
-    ))
+    new_item = Item(
 
-    conn.commit()
-    conn.close()
+        board=board,
+        name=name,
+        category=category,
 
-    return jsonify({"message": "Item added"})
+        quantity=data["quantity"],
+        alert_limit=data["alert_limit"],
+
+        created_at=now,
+        updated_at=now
+    )
+
+    db.session.add(new_item)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Item added"
+    })
 
 
 # =========================
 # UPDATE ITEM
 # =========================
+
 @app.route("/items/<int:id>", methods=["PUT"])
 def update_item(id):
+
     data = request.json
-    now = datetime.now().strftime("%d %b %Y, %I:%M %p")
 
-    conn = get_db()
+    item = Item.query.get(id)
 
-    conn.execute("""
-        UPDATE items
-        SET quantity=?,
-            updated_at=?
-        WHERE id=?
-    """, (
-        data["quantity"],
-        now,
-        id
-    ))
+    if not item:
+        return jsonify({
+            "message": "Item not found"
+        }), 404
 
-    conn.commit()
-    conn.close()
+    item.quantity = data["quantity"]
 
-    return jsonify({"message": "Updated"})
+    item.updated_at = datetime.now().strftime(
+        "%d %b %Y, %I:%M %p"
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Updated"
+    })
 
 
 # =========================
 # DELETE ITEM
 # =========================
+
 @app.route("/items/<int:id>", methods=["DELETE"])
 def delete_item(id):
-    conn = get_db()
 
-    conn.execute("""
-        DELETE FROM items
-        WHERE id=?
-    """, (id,))
+    item = Item.query.get(id)
 
-    conn.commit()
-    conn.close()
+    if not item:
+        return jsonify({
+            "message": "Item not found"
+        }), 404
 
-    return jsonify({"message": "Deleted"})
+    db.session.delete(item)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Deleted"
+    })
 
 
 # =========================
-# RUN (RENDER SAFE)
+# RUN
 # =========================
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
