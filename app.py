@@ -8,6 +8,7 @@ from flask import (
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 
 app = Flask(__name__)
@@ -20,7 +21,7 @@ app.secret_key = "stock-secret-key"
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Render postgres fix
+# Render PostgreSQL Fix
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace(
         "postgres://",
@@ -73,6 +74,17 @@ def clean_text(text):
 
 
 # =========================
+# GET INDIAN TIME
+# =========================
+
+def get_ist_time():
+
+    return datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime("%d %b %Y, %I:%M %p")
+
+
+# =========================
 # HOME ROUTE
 # =========================
 
@@ -87,6 +99,7 @@ def home():
 
 @app.route("/board/<board_name>")
 def board(board_name):
+
     return render_template(
         "index.html",
         board=board_name
@@ -147,9 +160,7 @@ def add_item(board):
     name = clean_text(data["name"])
     category = data["category"].strip().lower()
 
-    now = datetime.now().strftime(
-        "%d %b %Y, %I:%M %p"
-    )
+    now = get_ist_time()
 
     existing = Item.query.filter_by(
         board=board,
@@ -157,6 +168,7 @@ def add_item(board):
     ).first()
 
     if existing:
+
         return jsonify({
             "message": "Duplicate item not allowed"
         }), 400
@@ -194,15 +206,14 @@ def update_item(id):
     item = Item.query.get(id)
 
     if not item:
+
         return jsonify({
             "message": "Item not found"
         }), 404
 
     item.quantity = data["quantity"]
 
-    item.updated_at = datetime.now().strftime(
-        "%d %b %Y, %I:%M %p"
-    )
+    item.updated_at = get_ist_time()
 
     db.session.commit()
 
@@ -221,6 +232,7 @@ def delete_item(id):
     item = Item.query.get(id)
 
     if not item:
+
         return jsonify({
             "message": "Item not found"
         }), 404
@@ -234,8 +246,16 @@ def delete_item(id):
 
 
 # =========================
-# RUN
+# RUN APP
 # =========================
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+
+    app.run(
+        host="0.0.0.0",
+        port=10000
+    )
+
+
+
+    
