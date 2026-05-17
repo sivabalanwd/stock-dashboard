@@ -12,6 +12,15 @@ body {
 
 
 /* =========================
+   GLOBAL
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* =========================
    CONTAINER
 ========================= */
 
@@ -56,6 +65,19 @@ body {
 .top-buttons {
     display: flex;
     gap: 12px;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
 }
 
 .table-btn {
@@ -114,15 +136,26 @@ body {
     gap: 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     transition: 0.2s;
+    overflow: hidden;
 }
 
 .card:hover {
     transform: translateY(-2px);
 }
 
+.card-left {
+    width: 100%;
+    overflow: hidden;
+}
+
 .card h3 {
     margin: 0 0 10px;
     font-size: 22px;
+
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.4;
 }
 
 
@@ -203,19 +236,6 @@ body {
 
 
 /* =========================
-   BUTTONS
-========================= */
-
-button {
-    padding: 10px 14px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-
-/* =========================
    ADD BUTTON
 ========================= */
 
@@ -261,6 +281,7 @@ button {
     padding: 25px;
     border-radius: 18px;
     width: 350px;
+    max-width: 90%;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -310,6 +331,7 @@ input {
     border-radius: 14px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     overflow: hidden;
+    width: 100%;
 }
 
 table {
@@ -328,7 +350,10 @@ th {
 td {
     padding: 16px;
     border-bottom: 1px solid #eee;
-    word-wrap: break-word;
+
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 tr:hover {
@@ -340,31 +365,46 @@ tr:hover {
    STATUS
 ========================= */
 
+.available,
+.medium,
+.low {
+
+    display: inline-block;
+
+    max-width: 100%;
+
+    text-align: center;
+
+    word-break: break-word;
+
+    overflow-wrap: break-word;
+
+    white-space: normal;
+
+    line-height: 1.3;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
 .available {
     background: #dcfce7;
     color: #166534;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: bold;
 }
 
 .medium {
     background: #fef3c7;
     color: #92400e;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: bold;
 }
 
 .low {
     background: #fee2e2;
     color: #991b1b;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: bold;
 }
 
 
@@ -395,6 +435,15 @@ tr:hover {
 .filter-bar select {
     border: 1px solid #ccc;
     background: white;
+}
+
+
+/* =========================
+   SWEET ALERT FIX
+========================= */
+
+.swal2-container {
+    z-index: 99999 !important;
 }
 
 
@@ -435,6 +484,7 @@ tr:hover {
     }
 
     .search-bar {
+        width: 100%;
         max-width: 100%;
         font-size: 15px;
     }
@@ -449,6 +499,7 @@ tr:hover {
     }
 
     .qty-box {
+        width: 100%;
         text-align: left;
     }
 
@@ -458,6 +509,7 @@ tr:hover {
 
     .action-buttons {
         flex-direction: column;
+        width: 100%;
     }
 
     .edit-btn,
@@ -476,7 +528,6 @@ tr:hover {
 
     .modal-content {
         width: 90%;
-        max-width: 350px;
     }
 
     .filter-bar {
@@ -498,186 +549,6 @@ tr:hover {
     .medium,
     .low {
         font-size: 11px;
-        padding: 5px 8px;
-    }
-}
-
-.swal2-container {
-    z-index: 99999 !important;
-}
-
-/* FIX LONG ITEM NAMES */
-
-.card h3 {
-
-    word-wrap: break-word;
-
-    overflow-wrap: break-word;
-
-    word-break: break-word;
-
-    white-space: normal;
-
-    line-height: 1.4;
-}
-
-.card-left {
-
-    width: 100%;
-
-    overflow: hidden;
-}
-
-/* =========================
-   FULL RESPONSIVE FIX
-========================= */
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    overflow-x: hidden;
-}
-
-/* CARD TEXT FIX */
-
-.card h3 {
-
-    word-break: break-word;
-
-    overflow-wrap: break-word;
-
-    white-space: normal;
-
-    line-height: 1.4;
-}
-
-.card-left {
-    width: 100%;
-}
-
-/* STATUS BADGE FIX */
-
-.available,
-.medium,
-.low {
-
-    display: inline-block;
-
-    max-width: 100%;
-
-    text-align: center;
-
-    word-break: break-word;
-
-    overflow-wrap: break-word;
-
-    white-space: normal;
-
-    line-height: 1.3;
-}
-
-/* MOBILE FIX */
-
-@media (max-width: 768px) {
-
-    .container {
-        padding: 14px;
-    }
-
-    .header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .grid {
-        grid-template-columns: 1fr;
-    }
-
-    .card {
-
-        width: 100%;
-
-        flex-direction: column;
-
-        padding: 16px;
-
-        overflow: hidden;
-    }
-
-    .qty-box {
-
-        width: 100%;
-
-        text-align: left;
-    }
-
-    .action-buttons {
-
-        flex-direction: column;
-
-        width: 100%;
-    }
-
-    .edit-btn,
-    .delete-btn,
-    .table-btn {
-
-        width: 100%;
-    }
-
-    .search-bar {
-
-        width: 100%;
-
-        max-width: 100%;
-    }
-
-    .title-section h1 {
-
-        font-size: 22px;
-
-        line-height: 1.4;
-
-        text-align: center;
-    }
-
-    .title-section p {
-
-        text-align: center;
-    }
-
-    /* TABLE RESPONSIVE */
-
-    .table-container {
-
-        width: 100%;
-
-        overflow-x: auto;
-
-        -webkit-overflow-scrolling: touch;
-    }
-
-    table {
-
-        min-width: 600px;
-    }
-
-    th,
-    td {
-
-        white-space: nowrap;
-    }
-
-    /* STATUS TEXT */
-
-    .available,
-    .medium,
-    .low {
-
-        font-size: 11px;
-
         padding: 5px 8px;
     }
 }
