@@ -505,3 +505,25 @@ tr:hover {
 .swal2-container {
     z-index: 99999 !important;
 }
+
+/* FIX LONG ITEM NAMES */
+
+.card h3 {
+
+    word-wrap: break-word;
+
+    overflow-wrap: break-word;
+
+    word-break: break-word;
+
+    white-space: normal;
+
+    line-height: 1.4;
+}
+
+.card-left {
+
+    width: 100%;
+
+    overflow: hidden;
+}
