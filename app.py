@@ -21,7 +21,7 @@ app.secret_key = "stock-secret-key"
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# LOCAL SQLITE DATABASE
+# LOCAL DATABASE
 if not DATABASE_URL:
     DATABASE_URL = "sqlite:///database.db"
 
@@ -93,6 +93,7 @@ def get_ist_time():
 
 @app.route("/")
 def home():
+
     return redirect("/board/main")
 
 
@@ -161,13 +162,15 @@ def add_item(board):
     data = request.json
 
     name = clean_text(data["name"])
+
     category = data["category"].strip().lower()
 
     now = get_ist_time()
 
-    existing = Item.query.filter_by(
-        board=board,
-        name=name
+    # DUPLICATE CHECK
+    existing = Item.query.filter(
+        Item.board == board,
+        db.func.lower(Item.name) == name.lower()
     ).first()
 
     if existing:
@@ -190,6 +193,7 @@ def add_item(board):
     )
 
     db.session.add(new_item)
+
     db.session.commit()
 
     return jsonify({
@@ -241,6 +245,7 @@ def delete_item(id):
         }), 404
 
     db.session.delete(item)
+
     db.session.commit()
 
     return jsonify({
