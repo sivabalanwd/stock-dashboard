@@ -21,6 +21,10 @@ app.secret_key = "stock-secret-key"
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# LOCAL SQLITE DATABASE
+if not DATABASE_URL:
+    DATABASE_URL = "sqlite:///database.db"
+
 # Render PostgreSQL Fix
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace(
@@ -68,7 +72,6 @@ with app.app_context():
 def clean_text(text):
 
     return text.replace("=", "") \
-               .replace(" ", "") \
                .strip() \
                .lower()
 
@@ -253,9 +256,6 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=10000
+        port=10000,
+        debug=True
     )
-
-
-
-    
