@@ -87,14 +87,14 @@ def get_ist_time():
     ).strftime("%d %b %Y, %I:%M %p")
 
 
+
 # =========================
 # HOME ROUTE
 # =========================
-
 @app.route("/")
 def home():
 
-    return redirect("/board/main")
+    return redirect("/admin/login")
 
 @app.route("/admin/login")
 def admin_login_page():

@@ -159,6 +159,8 @@
             cursor:pointer;
 
             transition:0.3s;
+
+            margin-top:10px;
         }
 
         .login-btn:hover{
@@ -166,6 +168,16 @@
             transform:scale(1.02);
 
             background:#0ea5e9;
+        }
+
+        .view-btn{
+
+            background:#22c55e;
+        }
+
+        .view-btn:hover{
+
+            background:#16a34a;
         }
 
         .bottom-text{
@@ -229,10 +241,26 @@
 
 
         <button class="login-btn">
-            Login
+
+            Admin Login
+
         </button>
 
     </form>
+
+
+    <a href="/board/main">
+
+        <button
+            type="button"
+            class="login-btn view-btn"
+        >
+
+            View Stock
+
+        </button>
+
+    </a>
 
 
     <div class="bottom-text">
