@@ -96,6 +96,12 @@ def home():
 
     return redirect("/board/main")
 
+@app.route("/admin/login")
+def admin_login_page():
+
+    return render_template(
+        "admin_login.html"
+    )
 
 # =========================
 # BOARD PAGE
