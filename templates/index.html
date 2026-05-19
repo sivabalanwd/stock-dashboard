@@ -51,9 +51,16 @@
     </div>
 
     <!-- ADD BUTTON -->
-    <button class="add-btn" onclick="openForm()">
-        +
-    </button>
+    {% if is_admin %}
+
+<button
+    class="add-btn"
+    onclick="openForm()"
+>
+    +
+</button>
+
+{% endif %}
 
     <!-- ITEMS -->
     <div id="items" class="grid"></div>

@@ -3,7 +3,8 @@ from flask import (
     render_template,
     request,
     jsonify,
-    redirect
+    redirect,
+    session
 )
 
 from flask_sqlalchemy import SQLAlchemy
@@ -15,6 +16,8 @@ app = Flask(__name__)
 
 app.secret_key = "stock-secret-key"
 
+ADMIN_EMAIL = "admin@gmail.com"
+ADMIN_PASSWORD = "123456"
 # =========================
 # DATABASE CONFIG
 # =========================
@@ -91,13 +94,38 @@ def get_ist_time():
 # =========================
 # HOME ROUTE
 # =========================
-@app.route("/")
-def home():
-
-    return redirect("/admin/login")
-
-@app.route("/admin/login")
+# =========================
+# ADMIN LOGIN
+# =========================
+@app.route("/admin/login", methods=["GET", "POST"])
 def admin_login_page():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+        password = request.form["password"]
+
+        if (
+            email == ADMIN_EMAIL
+            and
+            password == ADMIN_PASSWORD
+        ):
+
+            session["admin"] = True
+
+            return redirect("/board/main")
+
+        else:
+
+            return """
+            <h2>
+            Invalid Email or Password
+            </h2>
+            """
+
+    return render_template(
+        "admin_login.html"
+    )
 
     return render_template(
         "admin_login.html"
@@ -110,12 +138,13 @@ def admin_login_page():
 @app.route("/board/<board_name>")
 def board(board_name):
 
+    is_admin = session.get("admin", False)
+
     return render_template(
         "index.html",
-        board=board_name
+        board=board_name,
+        is_admin=is_admin
     )
-
-
 # =========================
 # TABLE PAGE
 # =========================
