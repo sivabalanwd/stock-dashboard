@@ -94,6 +94,17 @@ def get_ist_time():
 # =========================
 # HOME ROUTE
 # =========================
+
+
+# =========================
+# VIEW STOCK (USER MODE)
+# =========================
+@app.route("/view-stock")
+def view_stock():
+
+    session.pop("admin", None)
+
+    return redirect("/board/main")
 # =========================
 # ADMIN LOGIN
 # =========================
@@ -130,6 +141,8 @@ def admin_login_page():
     return render_template(
         "admin_login.html"
     )
+
+# =========================
 
 # =========================
 # BOARD PAGE
