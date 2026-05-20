@@ -212,6 +212,12 @@ def get_items(board):
 @app.route("/items/<board>", methods=["POST"])
 def add_item(board):
 
+    if not session.get("admin"):
+
+        return jsonify({
+            "message": "Unauthorized"
+        }), 403
+
     data = request.json
 
     name = clean_text(data["name"])
@@ -252,14 +258,19 @@ def add_item(board):
     return jsonify({
         "message": "Item added"
     })
-
-
+# =========================
 # =========================
 # UPDATE ITEM
 # =========================
 
 @app.route("/items/<int:id>", methods=["PUT"])
 def update_item(id):
+
+    if not session.get("admin"):
+
+        return jsonify({
+            "message": "Unauthorized"
+        }), 403
 
     data = request.json
 
@@ -281,13 +292,19 @@ def update_item(id):
         "message": "Updated"
     })
 
-
+# =========================
 # =========================
 # DELETE ITEM
 # =========================
 
 @app.route("/items/<int:id>", methods=["DELETE"])
 def delete_item(id):
+
+    if not session.get("admin"):
+
+        return jsonify({
+            "message": "Unauthorized"
+        }), 403
 
     item = Item.query.get(id)
 
@@ -304,8 +321,6 @@ def delete_item(id):
     return jsonify({
         "message": "Deleted"
     })
-
-
 # =========================
 # RUN APP
 # =========================

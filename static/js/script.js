@@ -18,8 +18,6 @@ async function loadItems() {
 
     data.forEach(item => {
 
-        
-
         container.innerHTML += `
 
         <div class="card ${item.quantity < item.alert_limit ? 'low-stock' : ''}">
@@ -65,6 +63,8 @@ async function loadItems() {
                 </div>
 
 
+                ${IS_ADMIN ? `
+
                 <div class="action-buttons">
 
                     <button
@@ -83,6 +83,8 @@ async function loadItems() {
 
                 </div>
 
+                ` : ""}
+
             </div>
 
         </div>
@@ -90,7 +92,6 @@ async function loadItems() {
         `;
     });
 
-    
 }
 
 
@@ -120,46 +121,52 @@ async function addItem() {
 
     if (!name || !category || !quantity || !alertLimit) {
 
-    Swal.fire({
-        icon: "warning",
-        title: "Missing Fields",
-        text: "Please fill all fields"
-    });
+        Swal.fire({
+            icon: "warning",
+            title: "Missing Fields",
+            text: "Please fill all fields"
+        });
 
-    return;
-}
+        return;
+    }
 
     let res = await fetch(`/items/${board}`, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        name,
-        category,
-        quantity,
-        alert_limit: alertLimit
-    })
-});
 
-let result = await res.json();
-if (!res.ok) {
+        method: "POST",
 
-    Swal.fire({
-        icon: "error",
-        title: "Duplicate Item",
-        text: result.message || "Something went wrong"
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            name,
+            category,
+            quantity,
+            alert_limit: alertLimit
+        })
     });
 
-    return;
-}
-Swal.fire({
-    icon: "success",
-    title: "Item Added",
-    text: "New item added successfully",
-    timer: 1500,
-    showConfirmButton: false
-});
+    let result = await res.json();
+
+    if (!res.ok) {
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: result.message || "Something went wrong"
+        });
+
+        return;
+    }
+
+    Swal.fire({
+        icon: "success",
+        title: "Item Added",
+        text: "New item added successfully",
+        timer: 1500,
+        showConfirmButton: false
+    });
+
     closeForm();
 
     clearForm();
@@ -175,17 +182,23 @@ Swal.fire({
 async function updateItem(id) {
 
     const { value: quantity } = await Swal.fire({
+
         title: "Update Quantity",
+
         input: "number",
+
         inputLabel: "Enter new quantity",
+
         inputPlaceholder: "Quantity",
+
         confirmButtonText: "Update",
+
         showCancelButton: true
     });
 
     if (!quantity) return;
 
-    await fetch(`/items/${id}`, {
+    let res = await fetch(`/items/${id}`, {
 
         method: "PUT",
 
@@ -197,6 +210,19 @@ async function updateItem(id) {
             quantity: parseInt(quantity)
         })
     });
+
+    let result = await res.json();
+
+    if (!res.ok) {
+
+        Swal.fire({
+            icon: "error",
+            title: "Unauthorized",
+            text: result.message
+        });
+
+        return;
+    }
 
     Swal.fire({
         icon: "success",
@@ -217,20 +243,41 @@ async function updateItem(id) {
 async function deleteItem(id) {
 
     Swal.fire({
+
         title: "Delete Item?",
+
         text: "This action cannot be undone",
+
         icon: "warning",
+
         showCancelButton: true,
+
         confirmButtonColor: "#ef4444",
+
         cancelButtonColor: "#6b7280",
+
         confirmButtonText: "Yes, Delete"
+
     }).then(async (result) => {
 
         if (result.isConfirmed) {
 
-            await fetch(`/items/${id}`, {
+            let res = await fetch(`/items/${id}`, {
                 method: "DELETE"
             });
+
+            let data = await res.json();
+
+            if (!res.ok) {
+
+                Swal.fire({
+                    icon: "error",
+                    title: "Unauthorized",
+                    text: data.message
+                });
+
+                return;
+            }
 
             Swal.fire({
                 icon: "success",
@@ -244,6 +291,7 @@ async function deleteItem(id) {
         }
     });
 }
+
 
 // ==========================
 // OPEN MODAL
@@ -320,11 +368,18 @@ function searchItems() {
 
 
 // ==========================
-// START
+// TABLE VIEW
 // ==========================
+
 function goToTable() {
 
     window.location.href =
         `/table/${board}`;
 }
+
+
+// ==========================
+// START
+// ==========================
+
 loadItems();
