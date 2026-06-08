@@ -11,6 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import os
+import pandas as pd
+from flask import send_file
 
 app = Flask(__name__)
 
@@ -321,10 +323,89 @@ def delete_item(id):
     return jsonify({
         "message": "Deleted"
     })
+
+
+
+# =========================
+# EXPORT EXCEL
+# =========================
+
+@app.route("/export-excel")
+def export_excel():
+
+    if not session.get("admin"):
+        return "Unauthorized", 403
+
+    items = Item.query.all()
+
+    data = []
+
+    for item in items:
+
+        data.append({
+            "Board": item.board,
+            "Name": item.name,
+            "Category": item.category,
+            "Quantity": item.quantity,
+            "Alert Limit": item.alert_limit,
+            "Created": item.created_at,
+            "Updated": item.updated_at
+        })
+
+    df = pd.DataFrame(data)
+
+    file_name = "stock_backup.xlsx"
+
+    df.to_excel(
+        file_name,
+        index=False
+    )
+
+    return send_file(
+        file_name,
+        as_attachment=True
+    )
+####=========import   excel+++++#
+@app.route("/import-excel", methods=["POST"])
+def import_excel():
+
+    if not session.get("admin"):
+        return jsonify({
+            "message": "Unauthorized"
+        }), 403
+
+    file = request.files["file"]
+
+    df = pd.read_excel(file)
+
+    for _, row in df.iterrows():
+
+        item = Item(
+            board="main",
+            name=str(row["Name"]).strip().lower(),
+            category=str(row["Category"]).strip().lower(),
+            quantity=int(row["Quantity"]),
+            alert_limit=int(row["Alert Limit"]),
+            created_at=str(row["Created"]),
+            updated_at=str(row["Updated"])
+        )
+
+        db.session.add(item)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": f"{len(df)} items imported successfully"
+    })
+
 # =========================
 # RUN APP
 # =========================
+@app.route("/count")
+def count_items():
+    return str(Item.query.count())
 
+    
 if __name__ == "__main__":
 
     app.run(
@@ -332,3 +413,4 @@ if __name__ == "__main__":
         port=10000,
         debug=True
     )
+    

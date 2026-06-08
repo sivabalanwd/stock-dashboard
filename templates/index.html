@@ -26,6 +26,24 @@
                 Table View
             </button>
         </div>
+     {% if is_admin %}
+<button class="export-btn" onclick="exportExcel()">
+    📊 Export
+</button>
+
+<button class="export-btn" onclick="document.getElementById('excelFile').click()">
+    📥 Import
+</button>
+
+<input
+    type="file"
+    id="excelFile"
+    accept=".xlsx"
+    onchange="importExcel(this)"
+    style="display:none;"
+>
+{% endif %}
+
 
         <div class="title-section">
             <center>
@@ -100,10 +118,7 @@
 
 
 <script>
-
-    const IS_ADMIN =
-        {{ is_admin | tojson }};
-
+    const IS_ADMIN = "{{ is_admin }}";
 </script>
 <!-- ========================= -->
 <!-- SCRIPTS -->

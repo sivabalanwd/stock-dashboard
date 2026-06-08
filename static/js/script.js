@@ -94,6 +94,30 @@ async function loadItems() {
 
 }
 
+///=================
+
+async function importExcel(input) {
+
+    let file = input.files[0];
+
+    if (!file) return;
+
+    let formData = new FormData();
+
+    formData.append("file", file);
+
+    let res = await fetch("/import-excel", {
+        method: "POST",
+        body: formData
+    });
+
+    let result = await res.json();
+
+    alert(result.message);
+
+    loadItems();
+}
+
 
 // ==========================
 // ADD ITEM
@@ -382,4 +406,8 @@ function goToTable() {
 // START
 // ==========================
 
+
+function exportExcel() {
+    window.location.href = "/export-excel";
+}
 loadItems();

@@ -552,3 +552,14 @@ tr:hover {
         padding: 5px 8px;
     }
 }
+.export-btn{
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #0c0c0c;
+    color: white;
+    margin-left: 8px;
+    cursor: pointer;
+}
